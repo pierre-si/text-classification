@@ -1,6 +1,9 @@
 import os
+import pickle
 
 import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
@@ -67,8 +70,65 @@ def preprocess_dataset(path='data/datasets/contents.csv'):
     # supprimer éventuellement les "'", "-", 
     df['Content_Parsed'] = df['Content_Parsed'].str.replace(" +", " ")
     df.to_csv("data/datasets/contents.csv", index=False)
-    
+
+def split_data(random_state=42):
+    df = pd.read_csv('data/datasets/contents.csv', dtype={'Category':'category'})
+    X_train, X_test, y_train, y_test = train_test_split(df['Content_Parsed'], df['Category'].cat.codes, test_size=0.15, random_state=random_state, stratify=df['Category'].cat.codes)
+    with open('data/datasets/X_train.pickle', 'wb') as output:
+        pickle.dump(X_train, output)
+    with open('data/datasets/X_test.pickle', 'wb') as output:
+        pickle.dump(X_test, output)
+    with open('data/datasets/y_train.pickle', 'wb') as output:
+        pickle.dump(y_train, output)
+    with open('data/datasets/y_test.pickle', 'wb') as output:
+        pickle.dump(y_test, output)
+
+def generate_tfidf(path='data/datasets/tfidf/'):
+    ngram_range = (1, 2) # unigram et bigram
+    min_df = 10 # ignores terms with df lower than 10 (int)
+    max_df = 1. # ignores terms with df larger than 100% (float)
+    max_features = 300
+
+    tfidf = TfidfVectorizer(
+        encoding="utf-8",
+        ngram_range=ngram_range,
+        stop_words=None,
+        lowercase=False,
+        max_df=max_df,
+        min_df=min_df,
+        max_features=max_features,
+        norm='l2',
+        sublinear_tf=True) # → replaces tf with 1+log(tf)
+
+    with open("data/datasets/X_train.pickle", 'rb') as f:
+        X_train = pickle.load(f)
+    with open("data/datasets/X_test.pickle", 'rb') as f:
+        X_test = pickle.load(f)
+    with open("data/datasets/y_train.pickle", 'rb') as f:
+        y_train = pickle.load(f)
+    with open("data/datasets/y_test.pickle", 'rb') as f:
+        y_test = pickle.load(f)
+
+    features_train = tfidf.fit_transform(X_train).toarray()
+    labels_train = y_train
+    features_test = tfidf.transform(X_test).toarray()
+    labels_test = y_test
+    with open('data/datasets/tfidf/features_train.pickle', 'wb') as output:
+        pickle.dump(features_train, output)
+    with open('data/datasets/tfidf/labels_train.pickle', 'wb') as output:
+        pickle.dump(labels_train, output)
+    with open('data/datasets/tfidf/features_test.pickle', 'wb') as output:
+        pickle.dump(features_test, output)
+    with open('data/datasets/tfidf/labels_test.pickle', 'wb') as output:
+        pickle.dump(labels_test, output)
+
+
 if __name__ == '__main__':
-    os.mkdir('data/datasets')
+    if not os.path.exists('data/datasets'):
+        os.mkdir('data/datasets')
+    if not os.path.exists('data/datasets/tfidf'):
+        os.mkdir('data/datasets/tfidf')
     create_dataset()
     preprocess_dataset()
+    split_data()
+    generate_tfidf()
