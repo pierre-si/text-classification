@@ -87,11 +87,12 @@ best_svc.fit(features_train, labels_train)
 svc_pred = best_svc.predict(features_test)
 #%%
 # Training accuracy
+# 0.996
 print("The training accuracy is: ")
 print(accuracy_score(labels_train, best_svc.predict(features_train)))
 #%%
 # Test accuracy
-# Acc: 0.53
+# Acc: 0.672
 print("The test accuracy is: ")
 print(accuracy_score(labels_test, svc_pred))
 #%%
@@ -116,7 +117,7 @@ plt.show()
 
 #%%
 # Default parameters SVM
-# Acc: 0.
+# Acc: 0.717
 base_model = svm.SVC(random_state = 8)
 base_model.fit(features_train, labels_train)
 accuracy_score(labels_test, base_model.predict(features_test))
