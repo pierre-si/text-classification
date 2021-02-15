@@ -27,6 +27,10 @@ with open(DATA_PATH+'labels_test.pickle', 'rb') as data:
     labels_test = pickle.load(data)
 
 #%%
+features_train = features_train[:10_000]
+labels_train = labels_train[:10_000]
+
+#%%
 svc_0 =svm.SVC(random_state=8)
 
 print('Parameters currently in use:\n')
@@ -58,7 +62,8 @@ random_search = RandomizedSearchCV(estimator=svc,
                                    scoring='accuracy',
                                    cv=3, 
                                    verbose=1, 
-                                   random_state=8)
+                                   random_state=8,
+                                   n_jobs=-1)
 
 # Fit the random search model
 random_search.fit(features_train, labels_train)
@@ -81,11 +86,13 @@ best_svc.fit(features_train, labels_train)
 svc_pred = best_svc.predict(features_test)
 #%%
 # Training accuracy
+# github: 0.996
 print("The training accuracy is: ")
 print(accuracy_score(labels_train, best_svc.predict(features_train)))
 #%%
 # Test accuracy
-# Acc: 0.955
+# bbc Acc: 0.955
+# github Acc: 0.672
 print("The test accuracy is: ")
 print(accuracy_score(labels_test, svc_pred))
 #%%
@@ -95,6 +102,8 @@ print(classification_report(labels_test,svc_pred))
 
 #%%
 aux_df = pd.concat([df.Category, df.Category.cat.codes], axis=1).rename(columns={0:'Category_Code'}).drop_duplicates().sort_values('Category_Code')
+aux_df = pd.DataFrame([['bug', 0], ['feature', 1], ['question', 2]], columns=['Category', 'Category_Code'])
+
 conf_matrix = confusion_matrix(labels_test, svc_pred)
 plt.figure(figsize=(12.8,6))
 sns.heatmap(conf_matrix, 
@@ -109,7 +118,8 @@ plt.show()
 
 #%%
 # Default parameters SVM
-# Acc: 0.961
+# bbc Acc: 0.961
+# github Acc: 0.717
 base_model = svm.SVC(random_state = 8)
 base_model.fit(features_train, labels_train)
 accuracy_score(labels_test, base_model.predict(features_test))

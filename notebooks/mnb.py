@@ -26,6 +26,10 @@ with open(DATA_PATH+'features_test.pickle', 'rb') as data:
 with open(DATA_PATH+'labels_test.pickle', 'rb') as data:
     labels_test = pickle.load(data)
 
+#%%
+features_train = features_train[:10_000]
+labels_train = labels_train[:10_000]
+
 # %%
 mnbc = MultinomialNB()
 mnbc
@@ -40,6 +44,7 @@ print("The training accuracy is: ")
 print(accuracy_score(labels_train, mnbc.predict(features_train)))
 # %%
 # Test accuracy
+# github: 0.696
 print("The test accuracy is: ")
 print(accuracy_score(labels_test, mnbc_pred))
 # %%
@@ -48,6 +53,8 @@ print("Classification report")
 print(classification_report(labels_test,mnbc_pred))
 # %%
 aux_df = pd.concat([df.Category, df.Category.cat.codes], axis=1).rename(columns={0:'Category_Code'}).drop_duplicates().sort_values('Category_Code')
+aux_df = pd.DataFrame([['bug', 0], ['feature', 1], ['question', 2]], columns=['Category', 'Category_Code'])
+
 conf_matrix = confusion_matrix(labels_test, mnbc_pred)
 plt.figure(figsize=(12.8,6))
 sns.heatmap(conf_matrix, 

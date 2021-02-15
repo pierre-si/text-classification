@@ -33,10 +33,14 @@ knnc_0 =KNeighborsClassifier()
 
 print('Parameters currently in use:\n')
 pprint(knnc_0.get_params())
+#%%
+features_train = features_train[:10_000]
+labels_train = labels_train[:10_000]
+
 # %%
 # Grid search
 # Create the parameter grid 
-n_neighbors = [int(x) for x in np.linspace(start = 1, stop = 500, num = 100)]
+n_neighbors = [int(x) for x in np.linspace(start = 1, stop = 40, num = 20)]
 
 param_grid = {'n_neighbors': n_neighbors}
 
@@ -51,7 +55,8 @@ grid_search = GridSearchCV(estimator=knnc,
                            param_grid=param_grid,
                            scoring='accuracy',
                            cv=cv_sets,
-                           verbose=1)
+                           verbose=1,
+                           n_jobs=-1)
 
 # Fit the grid search to the data
 grid_search.fit(features_train, labels_train)
@@ -72,7 +77,8 @@ grid_search = GridSearchCV(estimator=knnc,
                            param_grid=param_grid,
                            scoring='accuracy',
                            cv=cv_sets,
-                           verbose=1)
+                           verbose=1,
+                           n_jobs=-1)
 
 grid_search.fit(features_train, labels_train)
 # %%
@@ -99,9 +105,13 @@ print(accuracy_score(labels_test, knnc_pred))
 # %%
 # Test accuracy
 print("The test accuracy is: ")
+# github Acc: 0.533
 print(accuracy_score(labels_test, knnc_pred))
 # %%
 aux_df = pd.concat([df.Category, df.Category.cat.codes], axis=1).rename(columns={0:'Category_Code'}).drop_duplicates().sort_values('Category_Code')
+# ne prédit aucune question (unbalanced)
+aux_df = pd.DataFrame([['bug', 0], ['feature', 1], ['question', 2]], columns=['Category', 'Category_Code'])
+
 conf_matrix = confusion_matrix(labels_test, knnc_pred)
 plt.figure(figsize=(12.8,6))
 sns.heatmap(conf_matrix, 

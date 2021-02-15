@@ -25,6 +25,10 @@ with open(DATA_PATH+'features_test.pickle', 'rb') as data:
 
 with open(DATA_PATH+'labels_test.pickle', 'rb') as data:
     labels_test = pickle.load(data)
+
+#%%
+features_train = features_train[:10_000]
+labels_train = labels_train[:10_000]
 # %%
 rf_0 = RandomForestClassifier(random_state=0)
 
@@ -58,7 +62,8 @@ random_search = RandomizedSearchCV(estimator=rfc,
                                    scoring='accuracy',
                                    cv=3, 
                                    verbose=1, 
-                                   random_state=8)
+                                   random_state=8,
+                                   n_jobs=-1)
 
 # Fit the random search model
 random_search.fit(features_train, labels_train)
@@ -83,7 +88,8 @@ print("The training accuracy is: ")
 print(accuracy_score(labels_train, best_rfc.predict(features_train)))
 # %%
 # Test accuracy
-# 0.937
+# bbc: 0.937
+# github: 0.712
 print("The test accuracy is: ")
 print(accuracy_score(labels_test, rfc_pred))
 # %%
@@ -92,6 +98,9 @@ print("Classification report")
 print(classification_report(labels_test,rfc_pred))
 # %%
 aux_df = pd.concat([df.Category, df.Category.cat.codes], axis=1).rename(columns={0:'Category_Code'}).drop_duplicates().sort_values('Category_Code')
+aux_df = pd.DataFrame([['bug', 0], ['feature', 1], ['question', 2]], columns=['Category', 'Category_Code'])
+
+
 conf_matrix = confusion_matrix(labels_test, rfc_pred)
 plt.figure(figsize=(12.8,6))
 sns.heatmap(conf_matrix, 
@@ -105,7 +114,8 @@ plt.title('Confusion matrix')
 plt.show()
 # %%
 # Default parameters RF
-# Acc: 0.934
+# bbc Acc: 0.934
+# github Acc: 0.709
 base_model = RandomForestClassifier(random_state = 8)
 base_model.fit(features_train, labels_train)
 accuracy_score(labels_test, base_model.predict(features_test))
@@ -123,4 +133,3 @@ with open('../models/best_rfc.pickle', 'wb') as output:
     
 with open('../models/df_models_rfc.pickle', 'wb') as output:
     pickle.dump(df_models_rfc, output)
-# %%
