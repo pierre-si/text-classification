@@ -8,7 +8,8 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
  
-def create_dataset(path="data/bbc"):
+def merge_bbc_data():
+    path="data/bbc"
     categories = [ name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name)) ]
     
     data = []
@@ -19,8 +20,8 @@ def create_dataset(path="data/bbc"):
             file_path = os.path.join(cat_path, file)
             f = open(file_path, 'r', encoding="iso-8859-1")
             data.append([file, ''.join(f.readlines()), cat])
-    df = pd.DataFrame(columns=['File_Name', 'Content', 'Category'], data=data)
-    df.to_csv("data/datasets/contents.csv", index=False)
+    df = pd.DataFrame(columns=['filename', 'text', 'label'], data=data)
+    df.to_csv("datasets/bbc/contents.csv", index=False)
 
 def preprocess_dataset(path='data/datasets/contents.csv'):
     df = pd.read_csv(path, dtype={'Category':'category'})
@@ -124,11 +125,12 @@ def generate_tfidf(path='data/datasets/tfidf/'):
 
 
 if __name__ == '__main__':
-    if not os.path.exists('data/datasets'):
-        os.mkdir('data/datasets')
-    if not os.path.exists('data/datasets/tfidf'):
-        os.mkdir('data/datasets/tfidf')
-    create_dataset()
+    if not os.path.exists('datasets'):
+        os.mkdir('datasets')
+        os.mkdir('datasets/bbc')
+    if not os.path.exists('datasets/bbc/tfidf'):
+        os.mkdir('datasets/bbc/tfidf')
+    merge_bbc_data()
     preprocess_dataset()
     split_data()
     generate_tfidf()
