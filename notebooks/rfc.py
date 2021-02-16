@@ -13,6 +13,7 @@ import seaborn as sns
 #%%
 DATA_PATH = "../data/datasets/tfidf/"
 df = pd.read_csv('../data/datasets/contents.csv', dtype={'Category': 'category'})
+df = pd.read_csv('../data/datasets/contents.csv', dtype={'sentiment': 'category'})
 
 with open(DATA_PATH+'features_train.pickle', 'rb') as data:
     features_train = pickle.load(data)
@@ -90,6 +91,7 @@ print(accuracy_score(labels_train, best_rfc.predict(features_train)))
 # Test accuracy
 # bbc: 0.937
 # github: 0.712
+# twitter: 0.649
 print("The test accuracy is: ")
 print(accuracy_score(labels_test, rfc_pred))
 # %%
@@ -99,6 +101,7 @@ print(classification_report(labels_test,rfc_pred))
 # %%
 aux_df = pd.concat([df.Category, df.Category.cat.codes], axis=1).rename(columns={0:'Category_Code'}).drop_duplicates().sort_values('Category_Code')
 aux_df = pd.DataFrame([['bug', 0], ['feature', 1], ['question', 2]], columns=['Category', 'Category_Code'])
+aux_df = pd.DataFrame([['bug', 0], ['feature', 1], ['question', 2]], columns=['sentiment', 'sentiment_code'])
 
 
 conf_matrix = confusion_matrix(labels_test, rfc_pred)
@@ -107,6 +110,8 @@ sns.heatmap(conf_matrix,
             annot=True,
             xticklabels=aux_df['Category'].values, 
             yticklabels=aux_df['Category'].values,
+            #xticklabels=aux_df['sentiment'].values, 
+            #yticklabels=aux_df['sentiment'].values,
             cmap="Blues")
 plt.ylabel('Predicted')
 plt.xlabel('Actual')
@@ -116,6 +121,7 @@ plt.show()
 # Default parameters RF
 # bbc Acc: 0.934
 # github Acc: 0.709
+# twitter Acc: 0.631
 base_model = RandomForestClassifier(random_state = 8)
 base_model.fit(features_train, labels_train)
 accuracy_score(labels_test, base_model.predict(features_test))

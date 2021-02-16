@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 # %%
+# github
 train = pd.read_json('../data/embold_train.json')
 train_extra = pd.read_json('../data/embold_train_extra.json')
 train = pd.concat([train, train_extra], ignore_index=True)
@@ -21,6 +22,14 @@ test['text'] = test.title + ' ' + test.body
 train.head()
 # %%
 df = train.drop(['title', 'body'], axis=1)
+#%%
+#twitter
+train = pd.read_csv('../data/train.csv', dtype={'sentiment':'category'})
+test = pd.read_csv('../data/test.csv')
+# 0: bug, 1: feature, 2: question
+# %%
+df = train.drop(['selected_text', 'textID'], axis=1)
+df = df.dropna().reset_index(drop=True)
 # %%
 # Removing \r, \n, contiguous whitespaces, 's, "
 df['Content_Parsed'] = df['text'].str.replace("\r", " ")
@@ -63,12 +72,12 @@ for stop_word in stop_words:
 df['Content_Parsed'] = df['Content_Parsed'].str.replace(" +", " ")
 # %%
 df.to_csv("../data/datasets/contents.csv", index=False)
-
 # %% 
 # Train Test split
 #df = pd.read_csv('data/datasets/contents.csv', dtype={'Category':'category'})
 random_state = 10
 X_train, X_test, y_train, y_test = train_test_split(df['Content_Parsed'], df['label'], test_size=0.1, random_state=random_state, stratify=df['label'])
+X_train, X_test, y_train, y_test = train_test_split(df['Content_Parsed'], df['sentiment'].cat.codes, test_size=0.1, random_state=random_state, stratify=df['sentiment'].cat.codes)
 with open('../data/datasets/X_train.pickle', 'wb') as output:
     pickle.dump(X_train, output)
 with open('../data/datasets/X_test.pickle', 'wb') as output:
