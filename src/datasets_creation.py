@@ -23,21 +23,21 @@ def merge_bbc_data():
     df = pd.DataFrame(columns=['filename', 'text', 'label'], data=data)
     df.to_csv("datasets/bbc/contents.csv", index=False)
 
-def preprocess_dataset(path='data/datasets/contents.csv'):
-    df = pd.read_csv(path, dtype={'Category':'category'})
+def preprocess_dataset(path):
+    df = pd.read_csv(path, dtype={'label':'category'})
 
     # Removing \r, \n, contiguous whitespaces, 's, "
-    df['Content_Parsed'] = df['Content'].str.replace("\r", " ")
-    df['Content_Parsed'] = df['Content_Parsed'].str.replace("\n", " ")
-    df['Content_Parsed'] = df['Content_Parsed'].str.replace(" +", " ")
-    df['Content_Parsed'] = df['Content_Parsed'].str.replace("'s", "")
-    df['Content_Parsed'] = df['Content_Parsed'].str.replace('"', '')
+    df['parsed'] = df['text'].str.replace("\r", " ")
+    df['parsed'] = df['parsed'].str.replace("\n", " ")
+    df['parsed'] = df['parsed'].str.replace(" +", " ")
+    df['parsed'] = df['parsed'].str.replace("'s", "")
+    df['parsed'] = df['parsed'].str.replace('"', '')
     # To downcase
-    df['Content_Parsed'] = df['Content_Parsed'].str.lower()
+    df['parsed'] = df['parsed'].str.lower()
     # Removing punctuation
     punctuation_signs = list("?:!.,;")
     for punct_sign in punctuation_signs:
-        df['Content_Parsed'] = df['Content_Parsed'].str.replace(punct_sign, '')
+        df['parsed'] = df['parsed'].str.replace(punct_sign, '')
     # Lemmatization
     nltk.download('punkt')
     nltk.download('wordnet')
@@ -47,14 +47,14 @@ def preprocess_dataset(path='data/datasets/contents.csv'):
 
     for row in range(0, nrows):
         lemmatized_list = []
-        text = df.loc[row]['Content_Parsed']
+        text = df.loc[row]['parsed']
         text_words = text.split(" ")
         for word in text_words:
             lemmatized_list.append(lemmatizer.lemmatize(word, pos='v'))
 
         lemmatized_text = " ".join(lemmatized_list)
         lemmatized_text_list.append(lemmatized_text)
-    df['Content_Parsed'] = lemmatized_text_list
+    df['parsed'] = lemmatized_text_list
     # STOP Words
     nltk.download('stopwords')
     # missing a few stopwords such as they've
@@ -67,14 +67,14 @@ def preprocess_dataset(path='data/datasets/contents.csv'):
     # Python str.replace() does not support regex, but pandas' series.str.replace does.
     for stop_word in stop_words:
         regex_stopword = r"\b" + stop_word + r"\b"
-        df['Content_Parsed'] = df['Content_Parsed'].str.replace(regex_stopword, '')
+        df['parsed'] = df['parsed'].str.replace(regex_stopword, '')
     # supprimer éventuellement les "'", "-", 
-    df['Content_Parsed'] = df['Content_Parsed'].str.replace(" +", " ")
-    df.to_csv("data/datasets/contents.csv", index=False)
+    df['parsed'] = df['parsed'].str.replace(" +", " ")
+    df.to_csv("datasets/contents.csv", index=False)
 
 def split_data(random_state=42):
-    df = pd.read_csv('data/datasets/contents.csv', dtype={'Category':'category'})
-    X_train, X_test, y_train, y_test = train_test_split(df['Content_Parsed'], df['Category'].cat.codes, test_size=0.15, random_state=random_state, stratify=df['Category'].cat.codes)
+    df = pd.read_csv('data/datasets/contents.csv', dtype={'label':'category'})
+    X_train, X_test, y_train, y_test = train_test_split(df['parsed'], df['label'].cat.codes, test_size=0.15, random_state=random_state, stratify=df['label'].cat.codes)
     with open('data/datasets/X_train.pickle', 'wb') as output:
         pickle.dump(X_train, output)
     with open('data/datasets/X_test.pickle', 'wb') as output:
