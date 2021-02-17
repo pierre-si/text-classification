@@ -70,21 +70,21 @@ def preprocess_dataset(path):
         df['parsed'] = df['parsed'].str.replace(regex_stopword, '')
     # supprimer éventuellement les "'", "-", 
     df['parsed'] = df['parsed'].str.replace(" +", " ")
-    df.to_csv("datasets/contents.csv", index=False)
+    df.to_csv(path, index=False)
 
-def split_data(random_state=42):
-    df = pd.read_csv('data/datasets/contents.csv', dtype={'label':'category'})
+def split_data(folder, random_state=42):
+    df = pd.read_csv(folder+'contents.csv', dtype={'label':'category'})
     X_train, X_test, y_train, y_test = train_test_split(df['parsed'], df['label'].cat.codes, test_size=0.15, random_state=random_state, stratify=df['label'].cat.codes)
-    with open('data/datasets/X_train.pickle', 'wb') as output:
+    with open(folder+'/X_train.pickle', 'wb') as output:
         pickle.dump(X_train, output)
-    with open('data/datasets/X_test.pickle', 'wb') as output:
+    with open(folder+'/X_test.pickle', 'wb') as output:
         pickle.dump(X_test, output)
-    with open('data/datasets/y_train.pickle', 'wb') as output:
+    with open(folder+'/y_train.pickle', 'wb') as output:
         pickle.dump(y_train, output)
-    with open('data/datasets/y_test.pickle', 'wb') as output:
+    with open(folder+'/y_test.pickle', 'wb') as output:
         pickle.dump(y_test, output)
 
-def generate_tfidf(path='data/datasets/tfidf/'):
+def generate_tfidf(folder):
     ngram_range = (1, 2) # unigram et bigram
     min_df = 10 # ignores terms with df lower than 10 (int)
     max_df = 1. # ignores terms with df larger than 100% (float)
@@ -101,36 +101,38 @@ def generate_tfidf(path='data/datasets/tfidf/'):
         norm='l2',
         sublinear_tf=True) # → replaces tf with 1+log(tf)
 
-    with open("data/datasets/X_train.pickle", 'rb') as f:
+    with open(folder+"/X_train.pickle", 'rb') as f:
         X_train = pickle.load(f)
-    with open("data/datasets/X_test.pickle", 'rb') as f:
+    with open(folder+"/X_test.pickle", 'rb') as f:
         X_test = pickle.load(f)
-    with open("data/datasets/y_train.pickle", 'rb') as f:
+    with open(folder+"/y_train.pickle", 'rb') as f:
         y_train = pickle.load(f)
-    with open("data/datasets/y_test.pickle", 'rb') as f:
+    with open(folder+"/y_test.pickle", 'rb') as f:
         y_test = pickle.load(f)
 
     features_train = tfidf.fit_transform(X_train).toarray()
     labels_train = y_train
     features_test = tfidf.transform(X_test).toarray()
     labels_test = y_test
-    with open('data/datasets/tfidf/features_train.pickle', 'wb') as output:
+    with open(folder+'/tfidf/features_train.pickle', 'wb') as output:
         pickle.dump(features_train, output)
-    with open('data/datasets/tfidf/labels_train.pickle', 'wb') as output:
+    with open(folder+'/tfidf/labels_train.pickle', 'wb') as output:
         pickle.dump(labels_train, output)
-    with open('data/datasets/tfidf/features_test.pickle', 'wb') as output:
+    with open(folder+'/tfidf/features_test.pickle', 'wb') as output:
         pickle.dump(features_test, output)
-    with open('data/datasets/tfidf/labels_test.pickle', 'wb') as output:
+    with open(folder+'/tfidf/labels_test.pickle', 'wb') as output:
         pickle.dump(labels_test, output)
 
 
 if __name__ == '__main__':
     if not os.path.exists('datasets'):
         os.mkdir('datasets')
+    # bbc
+    if not os.path.exists('datasets/bbc'):
         os.mkdir('datasets/bbc')
     if not os.path.exists('datasets/bbc/tfidf'):
         os.mkdir('datasets/bbc/tfidf')
     merge_bbc_data()
-    preprocess_dataset()
-    split_data()
-    generate_tfidf()
+    preprocess_dataset('datasets/bbc/contents.csv')
+    split_data('datasets/bbc/')
+    generate_tfidf('datasets/bbc/')
