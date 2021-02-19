@@ -23,7 +23,36 @@ def merge_bbc_data():
     df = pd.DataFrame(columns=['filename', 'text', 'label'], data=data)
     df.to_csv("datasets/bbc/contents.csv", index=False)
 
-def preprocess_dataset(path):
+# train & train_extra: title, body, label
+# test: title, body
+def retrieve_github_data():
+    train = pd.read_json('data/github/embold_train.json')
+    #train_extra = pd.read_json('data/github/embold_train_extra.json')
+    #train = pd.concat([train, train_extra], ignore_index=True)
+    #test = pd.read_json('data/github/embold_test.json')
+    # 0: bug, 1: feature, 2: question
+    train['text'] = train.title + ' ' + train.body
+    #test['text'] = test.title + ' ' + test.body
+
+    df = train.drop(['title', 'body'], axis=1)
+    category_codes = {0:'bug', 1:'feature', 2:'question'}
+    df.label = df.label.map(category_codes)
+    df.to_csv('datasets/github/contents.csv', index=False)
+
+def retrieve_twitter_data():
+    train = pd.read_csv('data/twitter/train.csv', dtype={'sentiment':'category'})
+    test = pd.read_csv('data/twitter/test.csv', dtype={'sentiment':'category'})
+
+    train = train.drop(['textID', 'selected_text'], axis=1)
+    train = train.dropna().reset_index(drop=True)
+    test = test.drop(['textID'], axis=1)
+    train.rename(columns={'sentiment':'label'}, inplace=True)
+    test.rename(columns={'sentiment':'label'}, inplace=True)
+
+    train.to_csv('datasets/twitter/contents.csv', index=False)
+    test.to_csv('datasets/twitter/test.csv', index=False)
+
+def preprocess_text(path):
     df = pd.read_csv(path, dtype={'label':'category'})
 
     # Removing \r, \n, contiguous whitespaces, 's, "
@@ -70,11 +99,15 @@ def preprocess_dataset(path):
         df['parsed'] = df['parsed'].str.replace(regex_stopword, '')
     # supprimer éventuellement les "'", "-", 
     df['parsed'] = df['parsed'].str.replace(" +", " ")
+
+    # removing rows with empty string (or else they will be loaded as NaN)
+    df = df[df['parsed'] != '']
+
     df.to_csv(path, index=False)
 
-def split_data(folder, random_state=42):
+def split_data(folder, test_size=.1, random_state=10):
     df = pd.read_csv(folder+'contents.csv', dtype={'label':'category'})
-    X_train, X_test, y_train, y_test = train_test_split(df['parsed'], df['label'].cat.codes, test_size=0.15, random_state=random_state, stratify=df['label'].cat.codes)
+    X_train, X_test, y_train, y_test = train_test_split(df['parsed'], df['label'].cat.codes, test_size=test_size, random_state=random_state, stratify=df['label'].cat.codes)
     with open(folder+'/X_train.pickle', 'wb') as output:
         pickle.dump(X_train, output)
     with open(folder+'/X_test.pickle', 'wb') as output:
@@ -128,11 +161,31 @@ if __name__ == '__main__':
     if not os.path.exists('datasets'):
         os.mkdir('datasets')
     # bbc
-    if not os.path.exists('datasets/bbc'):
-        os.mkdir('datasets/bbc')
-    if not os.path.exists('datasets/bbc/tfidf'):
-        os.mkdir('datasets/bbc/tfidf')
-    merge_bbc_data()
-    preprocess_dataset('datasets/bbc/contents.csv')
-    split_data('datasets/bbc/')
-    generate_tfidf('datasets/bbc/')
+    # if not os.path.exists('datasets/bbc'):
+    #     os.mkdir('datasets/bbc')
+    # if not os.path.exists('datasets/bbc/tfidf'):
+    #     os.mkdir('datasets/bbc/tfidf')
+    # merge_bbc_data()
+    # preprocess_text('datasets/bbc/contents.csv')
+    # split_data('datasets/bbc/', test_size=.15)
+    # generate_tfidf('datasets/bbc/')
+
+    # github
+    # if not os.path.exists('datasets/github'):
+    #     os.mkdir('datasets/github')
+    # if not os.path.exists('datasets/github/tfidf'):
+    #     os.mkdir('datasets/github/tfidf')
+    # retrieve_github_data()
+    # preprocess_text('datasets/github/contents.csv')
+    # split_data('datasets/github/')
+    # generate_tfidf('datasets/github/')
+
+    # twitter
+    if not os.path.exists('datasets/twitter'):
+        os.mkdir('datasets/twitter')
+    if not os.path.exists('datasets/twitter/tfidf'):
+        os.mkdir('datasets/twitter/tfidf')
+    retrieve_twitter_data()
+    preprocess_text('datasets/twitter/contents.csv')
+    split_data('datasets/twitter/')
+    generate_tfidf('datasets/twitter/')
