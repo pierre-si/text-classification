@@ -1,4 +1,4 @@
-text,sentiment,Content_Parsed
+text,label,parsed
 " I`d have responded, if I were going",neutral, ` respond go
  Sooo SAD I will miss you here in San Diego!!!,negative, sooo sad miss san diego
 my boss is bullying me...,negative, boss bully 
@@ -3324,7 +3324,7 @@ To eat or not to eat? Its gonna be my last meal for the next 2 weeks.,neutral, e
 Working on some Product Buzz (product reviews) for the blog... have a pain in the back of my neck,negative,work product buzz (product reviews) blog pain back neck
 Should I say goodnight or good morning?,neutral, say goodnight good morning
 "Heading to the gym.  The group of guys that USED to go with me has all quit...well, except for Brandon.   Makes me terribly sad",negative,head gym group guy use go quitwell except brandon make terribly sad
- Also ,neutral, also 
+Also ,neutral,also 
  _lord Can`t we just all get along?,negative, _lord ` get along
 Happy Mother`s Day to all you tweeting mothers,positive,happy mother` day tweet mother
 " - l`d come if u could, but Australia is just too far away",negative, - l` come u could australia far away
@@ -8823,7 +8823,6 @@ but I am one in a million,neutral, one million
 Wild Oats Pinot Grigio = v easy to drink,positive,wild oats pinot grigio = v easy drink
 is desperatly hoping my dad takes me to vanessa`s game,positive, desperatly hop dad take vanessa` game
 Getting ready for a going-away dessert reception for a colleague who`s off to grad school.,neutral,get ready going-away dessert reception colleague ` grad school
-What!?!,neutral,
 I just love it when  hot policemen come into my work,positive, love hot policemen come work
  *hugs*  I`m so sorry.. anything I can do?,positive, *hugs* ` sorry anything 
 "  I`ve already done my washing, I have a spring in my step this morning",neutral, ` already wash spring step morning
