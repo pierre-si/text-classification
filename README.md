@@ -10,6 +10,9 @@ Based on https://towardsdatascience.com/ultimate-guide-to-python-debugging-854de
 # Github bugs
 Dataset from Github hosted on Kaggle. The task is to predict if the issue is a bug, a feature or a question.
 Text Classification [kaggle](https://www.kaggle.com/anmolkumar/github-bugs-prediction)
+Columns:
+Train & Train_extra: Title, Body, Label
+Test: Title, Body
 
 # Twitter
 Kaggle competition. The task is to determine if a tweet expresses a positive, neutral or negative opinion.
